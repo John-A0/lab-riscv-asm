@@ -34,7 +34,9 @@ base RV32I instruction set (which has no `mul`) is enough.
 |------|---------|
 | `row_sum.s` | RISC-V assembly program for Venus (`row_sum` function + `main`) |
 | `row_sum.c` | C implementation of the same algorithm |
-| `row_sum.dump` | `objdump -D` of the compiled C program |
+| `row_sum.dump` | full `objdump -D` of the compiled C program (includes startup code) |
+| `row_sum_funcs.dump` | only the disassembly of `row_sum` and `main` (the part used in section 7) |
+| `images/` | screenshots from the Venus simulator |
 | `README.md` | this report |
 
 ## 4. Assembly implementation and ABI
@@ -59,6 +61,8 @@ allowed to change, so nothing has to be saved on the stack.
 
 Venus system calls used: `ecall` with the id in `a0` and the argument in `a1`
 (`1` print_int, `4` print_string, `11` print_character, `10` exit).
+The result is moved to `s0` before printing, because `ecall` needs `a0` for the
+call id.
 
 ## 5. C implementation and build
 
@@ -66,6 +70,15 @@ Venus system calls used: `ecall` with the id in `a0` and the argument in `a1`
 # the toolchain from the lab (riscv-gcc-10.2.0) is on PATH
 riscv64-unknown-elf-gcc -march=rv32i -mabi=ilp32 row_sum.c -o row_sum.elf
 riscv64-unknown-elf-objdump -D row_sum.elf > row_sum.dump
+```
+
+The full dump is long because the linked program also contains the startup
+code and C library routines. The part written for this lab is found under the
+`<row_sum>:` and `<main>:` labels; it is also saved separately:
+
+```bash
+riscv64-unknown-elf-gcc -march=rv32i -mabi=ilp32 -c row_sum.c -o row_sum.o
+riscv64-unknown-elf-objdump -d row_sum.o > row_sum_funcs.dump
 ```
 
 `N` and `M` are `#define` constants: with a constant `M` the compiler turns
@@ -77,7 +90,27 @@ routine).
 
 1. Open https://www.kvakil.me/venus/ and paste `row_sum.s` into the editor.
 2. Press *Simulator* → *Assemble & Simulate from Editor*, then *Run*.
-3. Expected console output for row 2: `Row sum = 42`.
+3. Console output for row 2: `Row sum = 42`.
+
+![Venus run, row 2: console output and registers](images/run_row2.png)
+
+What the screenshot shows:
+
+* The console prints `Row sum = 42` (9 + 10 + 11 + 12).
+* `s0 = 0x2a` (42) holds the result returned from `row_sum`.
+* `t1 = 4`: the loop executed 4 times; `t2 = 0xc` (12) is the last element read.
+* `t0 = 0x10000030` points just after the row: row 2 starts at
+  `0x10000020`, and 4 elements of 4 bytes were passed (16 bytes).
+* `ra = 0x10` is the return address: the `jal` is at `0x0c`, so the next
+  instruction is at `0x10`.
+* `a0` and `a1` contain `0xa`: these are the values of the last `ecall`
+  (exit and newline), not the result.
+* `la a0, arr` is a pseudo-instruction expanded into two instructions
+  (`auipc` + `addi`), because one instruction cannot hold a 32-bit address.
+
+The array in the data segment (row-major, one word = 4 bytes):
+
+![Array in memory (data segment)](images/memory_data.png)
 
 Checked results for all rows of the array
 `{1,2,3,4}, {5,6,7,8}, {9,10,11,12}, {13,14,15,16}`:
@@ -91,15 +124,13 @@ Checked results for all rows of the array
 
 The C version gives the same values (`result == 42` for row 2).
 
-<!-- insert a screenshot of the Venus console here -->
-
 ## 7. Comparison: my assembly vs. compiler output
 
 Compiled without optimization (`-O0`, the default), the C function becomes
 **30 instructions**, the loop body is 17 instructions per iteration. My
 hand-written function is **12 instructions**, the loop body is 6.
 
-Why the compiler output is longer (see `row_sum.dump`):
+Why the compiler output is longer (see `row_sum_funcs.dump`):
 
 * It builds a stack frame (`addi sp,sp,-48`, `sw s0,44(sp)`, ...) and spills
   the arguments to the stack (`sw a0,-36(s0)`, `sw a1,-40(s0)`).
