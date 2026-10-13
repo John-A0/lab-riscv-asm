@@ -1,6 +1,6 @@
 # Lab 1 — RISC-V assembly: sum of a row of a 2D array
 
-**Author:** <FULL NAME>, group <GROUP> **Variant:** 5
+**Author: Kostandy John Aymn Zakaria**, group: P4119 **Variant:** 5
 
 ## 1. Task
 
