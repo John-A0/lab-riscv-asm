@@ -127,12 +127,13 @@ The C version gives the same values (`result == 42` for row 2).
 ## 7. Comparison: my assembly vs. compiler output
 
 Compiled without optimization (`-O0`, the default), the C function becomes
-**30 instructions**, the loop body is 17 instructions per iteration. My
+**32 instructions** (`row_sum` in `row_sum.dump`, addresses `0x80000064`–`0x800000e0`),
+the loop body is 17 instructions per iteration. My
 hand-written function is **12 instructions**, the loop body is 6.
 
 Why the compiler output is longer (see `row_sum_funcs.dump`):
 
-* It builds a stack frame (`addi sp,sp,-48`, `sw s0,44(sp)`, ...) and spills
+* It builds a stack frame (`addi sp,sp,-48`, `sw ra,44(sp)`, `sw s0,40(sp)`, ...) and spills
   the arguments to the stack (`sw a0,-36(s0)`, `sw a1,-40(s0)`).
 * `sum` and `j` live in **memory**, not in registers: every iteration
   loads and stores them (`lw`/`sw`).
