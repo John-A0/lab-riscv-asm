@@ -92,7 +92,7 @@ routine).
 2. Press *Simulator* → *Assemble & Simulate from Editor*, then *Run*.
 3. Console output for row 2: `Row sum = 42`.
 
-![Venus run, row 2: console output and registers](images/run_row2.png)
+![Venus run, row 2: console output and registers](images/run.png)
 
 What the screenshot shows:
 
@@ -110,7 +110,7 @@ What the screenshot shows:
 
 The array in the data segment (row-major, one word = 4 bytes):
 
-![Array in memory (data segment)](images/memory_data.png)
+![Array in memory (data segment)](images/memory.png)
 
 Checked results for all rows of the array
 `{1,2,3,4}, {5,6,7,8}, {9,10,11,12}, {13,14,15,16}`:
