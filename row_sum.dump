@@ -1,0 +1,124 @@
+
+row_sum.elf:     file format elf32-littleriscv
+
+
+Disassembly of section .text:
+
+00000000 <row_sum>:
+   0:	fd010113          	addi	sp,sp,-48
+   4:	02812623          	sw	s0,44(sp)
+   8:	03010413          	addi	s0,sp,48
+   c:	fca42e23          	sw	a0,-36(s0)
+  10:	fcb42c23          	sw	a1,-40(s0)
+  14:	fe042623          	sw	zero,-20(s0)
+  18:	fe042423          	sw	zero,-24(s0)
+  1c:	03c0006f          	j	58 <row_sum+0x58>
+  20:	fd842783          	lw	a5,-40(s0)
+  24:	00479793          	slli	a5,a5,0x4
+  28:	fdc42703          	lw	a4,-36(s0)
+  2c:	00f70733          	add	a4,a4,a5
+  30:	fe842783          	lw	a5,-24(s0)
+  34:	00279793          	slli	a5,a5,0x2
+  38:	00f707b3          	add	a5,a4,a5
+  3c:	0007a783          	lw	a5,0(a5)
+  40:	fec42703          	lw	a4,-20(s0)
+  44:	00f707b3          	add	a5,a4,a5
+  48:	fef42623          	sw	a5,-20(s0)
+  4c:	fe842783          	lw	a5,-24(s0)
+  50:	00178793          	addi	a5,a5,1
+  54:	fef42423          	sw	a5,-24(s0)
+  58:	fe842703          	lw	a4,-24(s0)
+  5c:	00300793          	li	a5,3
+  60:	fce7d0e3          	bge	a5,a4,20 <row_sum+0x20>
+  64:	fec42783          	lw	a5,-20(s0)
+  68:	00078513          	mv	a0,a5
+  6c:	02c12403          	lw	s0,44(sp)
+  70:	03010113          	addi	sp,sp,48
+  74:	00008067          	ret
+
+00000078 <main>:
+  78:	ff010113          	addi	sp,sp,-16
+  7c:	00112623          	sw	ra,12(sp)
+  80:	00812423          	sw	s0,8(sp)
+  84:	01010413          	addi	s0,sp,16
+  88:	00200593          	li	a1,2
+  8c:	000017b7          	lui	a5,0x1
+  90:	0c078513          	addi	a0,a5,192 # 10c0 <arr>
+  94:	00000097          	auipc	ra,0x0
+  98:	f6c080e7          	jalr	-148(ra) # 0 <row_sum>
+  9c:	00050713          	mv	a4,a0
+  a0:	000017b7          	lui	a5,0x1
+  a4:	10e7a023          	sw	a4,256(a5) # 1100 <result>
+  a8:	00000793          	li	a5,0
+  ac:	00078513          	mv	a0,a5
+  b0:	00c12083          	lw	ra,12(sp)
+  b4:	00812403          	lw	s0,8(sp)
+  b8:	01010113          	addi	sp,sp,16
+  bc:	00008067          	ret
+
+Disassembly of section .data:
+
+000010c0 <arr>:
+    10c0:	0001                	.insn	2, 0x0001
+    10c2:	0000                	.insn	2, 0x
+    10c4:	0002                	.insn	2, 0x0002
+    10c6:	0000                	.insn	2, 0x
+    10c8:	00000003          	lb	zero,0(zero) # 0 <row_sum>
+    10cc:	0004                	.insn	2, 0x0004
+    10ce:	0000                	.insn	2, 0x
+    10d0:	0005                	.insn	2, 0x0005
+    10d2:	0000                	.insn	2, 0x
+    10d4:	0006                	.insn	2, 0x0006
+    10d6:	0000                	.insn	2, 0x
+    10d8:	00000007          	.insn	4, 0x0007
+    10dc:	0008                	.insn	2, 0x0008
+    10de:	0000                	.insn	2, 0x
+    10e0:	0009                	.insn	2, 0x0009
+    10e2:	0000                	.insn	2, 0x
+    10e4:	000a                	.insn	2, 0x000a
+    10e6:	0000                	.insn	2, 0x
+    10e8:	0000000b          	.insn	4, 0x000b
+    10ec:	000c                	.insn	2, 0x000c
+    10ee:	0000                	.insn	2, 0x
+    10f0:	000d                	.insn	2, 0x000d
+    10f2:	0000                	.insn	2, 0x
+    10f4:	000e                	.insn	2, 0x000e
+    10f6:	0000                	.insn	2, 0x
+    10f8:	0000000f          	fence	unknown,unknown
+    10fc:	0010                	.insn	2, 0x0010
+	...
+
+Disassembly of section .comment:
+
+00000000 <.comment>:
+   0:	3a434347          	.insn	4, 0x3a434347
+   4:	2820                	.insn	2, 0x2820
+   6:	3331                	.insn	2, 0x3331
+   8:	322e                	.insn	2, 0x322e
+   a:	302e                	.insn	2, 0x302e
+   c:	312d                	.insn	2, 0x312d
+   e:	7531                	.insn	2, 0x7531
+  10:	7562                	.insn	2, 0x7562
+  12:	746e                	.insn	2, 0x746e
+  14:	3175                	.insn	2, 0x3175
+  16:	2932312b          	.insn	4, 0x2932312b
+  1a:	3120                	.insn	2, 0x3120
+  1c:	2e322e33          	.insn	4, 0x2e322e33
+  20:	0030                	.insn	2, 0x0030
+
+Disassembly of section .riscv.attributes:
+
+00000000 <.riscv.attributes>:
+   0:	1b41                	.insn	2, 0x1b41
+   2:	0000                	.insn	2, 0x
+   4:	7200                	.insn	2, 0x7200
+   6:	7369                	.insn	2, 0x7369
+   8:	01007663          	bgeu	zero,a6,14 <row_sum+0x14>
+   c:	0011                	.insn	2, 0x0011
+   e:	0000                	.insn	2, 0x
+  10:	1004                	.insn	2, 0x1004
+  12:	7205                	.insn	2, 0x7205
+  14:	3376                	.insn	2, 0x3376
+  16:	6932                	.insn	2, 0x6932
+  18:	7032                	.insn	2, 0x7032
+  1a:	0031                	.insn	2, 0x0031
