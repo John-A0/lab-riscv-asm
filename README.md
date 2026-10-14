@@ -128,25 +128,42 @@ The C version gives the same values (`result == 42` for row 2).
 
 ## 7. Comparison: my assembly vs. compiler output
 
-Compiled without optimization (`-O0`, the default), the C function becomes
-**32 instructions** (`row_sum` in `row_sum.dump`, addresses `0x80000064`–`0x800000e0`),
-the loop body is 17 instructions per iteration. My
-hand-written function is **12 instructions**, the loop body is 6.
+Both programs solve the same task with the same ABI (array address in `a0`,
+row number in `a1`, result in `a0`). The compiler output below is the
+`row_sum` function from `row_sum.dump` (built without optimization, `-O0`).
 
-Why the compiler output is longer (see `row_sum_funcs.dump`):
+| | My assembly | Compiler output (C, `-O0`) |
+|---|---|---|
+| Instructions in `row_sum` | 12 | 32 |
+| Instructions per loop iteration | 6 | 17 |
+| Stack frame | none | `addi sp,sp,-48`, saves and restores `ra` and `s0` |
+| Where `sum` and `j` live | registers (`a0`, `t1`) | memory (`-20(s0)`, `-24(s0)`) |
+| Arguments | stay in `a0`, `a1` | stored to the stack first (`sw a0,-36(s0)`, `sw a1,-40(s0)`), loaded again when needed |
+| Element address | row address computed once before the loop, then `addi t0,t0,4` | recomputed every iteration (`slli 4`, `add`, `slli 2`, `add`) |
+| Constant in the loop condition | `M = 4` kept in `t3` | `li a5,3` executed every iteration |
+| Loop condition | `bge t1,t3,done` at the top of the loop, plus `j loop` at the bottom | `j < 4` compiled as `3 >= j` (`bge a5,a4`), checked at the bottom: one conditional branch per iteration |
+| Return | result is already in `a0`, so `ret` | result is loaded from memory (`lw a5,-20(s0)`, `mv a0,a5`), stack is restored, then `ret` |
 
-* It builds a stack frame (`addi sp,sp,-48`, `sw ra,44(sp)`, `sw s0,40(sp)`, ...) and spills
-  the arguments to the stack (`sw a0,-36(s0)`, `sw a1,-40(s0)`).
-* `sum` and `j` live in **memory**, not in registers: every iteration
-  loads and stores them (`lw`/`sw`).
-* `a[row][j]` is recomputed every iteration: `row << 4`, `j << 2`, two `add`s.
-* The loop condition `j < 4` is compiled as `3 >= j` (`li a5,3` + `bge`).
+Why the compiler output is longer: without optimization the compiler gives
+every variable a place in memory and executes every C statement literally, so
+each `sum += a[row][j]` becomes load, compute, store. This makes debugging
+easy but the code slower. My version keeps everything in registers, advances
+a pointer by 4 each iteration and computes the row address once.
 
-My version keeps everything in registers, advances a pointer by 4 each
-iteration and computes the row address once before the loop.
+My loop has two jump instructions per iteration (`bge` and `j`), while the
+compiler's loop has one (it checks the condition at the bottom); this could be
+improved by moving my check to the end of the loop.
 
 With `-O2` the compiler unrolls the whole loop (the row has only 4 elements):
 `slli`, `add`, four `lw`, three `add`, `ret` — 10 instructions, no loop.
 
-Note: `objdump -D` also disassembles the `.data` section (the array) as if it
-were code; those lines in the dump are just the array values.
+What is the same in both: the algorithm and the result (42 for row 2), the
+ABI, `slli ... 4` to compute `row * 16`, `lw` to read the element, `add` to
+accumulate, and `la` expanded into `auipc` + `addi`.
+
+Other differences in the files: `row_sum.dump` also contains startup code
+(`_start`, `_cstart`, `__riscv_save_*`) and C library routines, which is why it
+is long, and its addresses start at `0x80000000` (the toolchain's linker
+script), while Venus places code at `0x0` and data at `0x10000000`. `main` in
+the C program stores the result in the variable `r`, while the assembly
+`main` prints it with `ecall`.
